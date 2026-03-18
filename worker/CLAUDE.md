@@ -15,6 +15,7 @@ Na starcie sesji hook wstrzykuje do Twojego kontekstu listę istniejących zada�
 2. Zapytaj użytkownika:
    - **Kontynuować istniejące?** — użytkownik wskazuje które. Przeczytaj plik statusu (`<nazwa>.md`) i plan (`<nazwa>.plan.md`) tego zadania. Pokaż użytkownikowi obecny status oraz co pozostało do zrobienia. Czekaj na instrukcje.
    - **Nowe zadanie?** — użytkownik podaje krótką nazwę w kebab-case (np. `fix-ssl-config`). Uruchom `/status-update` aby stworzyć pliki zadania.
+   - **Luźna praca?** — użytkownik chce pracować bez śledzenia zadania. Pracuj normalnie, nie uruchamiaj `/status-update`. Jeśli w dowolnym momencie użytkownik poda nazwę zadania i poprosi o zapisanie — uruchom `/status-update` aby utworzyć pliki zadania, a od tego momentu traktuj sesję jak normalną pracę nad zadaniem (regularnie aktualizuj status).
 
 ## Pliki zadania
 
@@ -29,4 +30,4 @@ Regularnie aktualizuj pliki zadania używając `/status-update` — za każdym r
 
 Gdy zmieniasz plan (dodajesz/usuwasz/modyfikujesz kroki) — ZAWSZE dopisz powód do motivation.md.
 
-Hook Stop będzie Ci o tym przypominał po każdej odpowiedzi. Jeśli jeszcze nie wybrałeś zadania lub nic istotnego się nie zmieniło — zignoruj przypomnienie.
+Jeśli projekt ma skonfigurowany hook Stop — będzie Ci przypominał o aktualizacji po każdej odpowiedzi. Zignoruj przypomnienie jeśli jeszcze nie wybrałeś zadania lub nic istotnego się nie zmieniło.

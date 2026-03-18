@@ -18,20 +18,25 @@ as-claude/                          # ten projekt — narzędzia i konfiguracja
 │   ├── config/global-settings.json # template hooków
 │   ├── hooks/
 │   │   ├── session-start.sh        # wstrzykuje listę zadań na starcie sesji
-│   │   └── update-status.sh        # przypomina o aktualizacji statusu
-│   └── skills/status-update/
-│       └── SKILL.md                # skill /status-update
+│   │   └── update-status.sh        # (opcjonalny) przypomina o aktualizacji statusu
+│   └── skills/
+│       ├── status-update/
+│       │   └── SKILL.md            # skill /status-update
+│       └── status-end/
+│           └── SKILL.md            # skill /status-end (archiwizacja zadań)
 └── manager/                        # (w przygotowaniu)
 
 as-claude-manager/                  # osobne repo — pliki statusów
 ├── nginx-servers/
 │   ├── audyt-konfiguracji-bugi.md              # status
 │   ├── audyt-konfiguracji-bugi.plan.md         # plan + dziennik
-│   └── audyt-konfiguracji-bugi.motivation.md   # log decyzji
+│   ├── audyt-konfiguracji-bugi.motivation.md   # log decyzji
+│   └── archive/                                # zarchiwizowane zadania
+│       ├── fix-login-flow.md
+│       ├── fix-login-flow.plan.md
+│       └── fix-login-flow.motivation.md
 ├── my-app/
-│   ├── fix-login-flow.md
-│   ├── fix-login-flow.plan.md
-│   └── fix-login-flow.motivation.md
+│   └── ...
 └── ...
 ```
 
@@ -52,11 +57,28 @@ Claude przedstawia Ci listę zadań i pyta:
 
 Pracujesz normalnie. Claude regularnie aktualizuje plik statusu za pomocą skilla `/status-update` — za każdym razem gdy zachodzą istotne zmiany. Status ma być żywym snapshotem, nie raportem końcowym.
 
-### 3. Przypomnienia
+### 3. Przypomnienia (opcjonalnie)
 
-Hook `update-status.sh` odpala się po każdej odpowiedzi Claude'a. Jeśli żaden plik statusu w katalogu repozytorium nie był modyfikowany w ciągu ostatnich 5 minut, przypomina Claude'owi o aktualizacji. Claude sam ocenia czy zaszły istotne zmiany — jeśli nie, ignoruje przypomnienie.
+Masz dwa podejścia do przypominania Claude'owi o aktualizacji statusu:
 
-### 4. Pliki zadań
+**Podejście A: Tylko instrukcje w CLAUDE.md (zalecane)**
+
+Instrukcja w CLAUDE.md mówi Claude'owi żeby regularnie uruchamiał `/status-update` przy istotnych zmianach. To wystarczy w większości przypadków — Claude stosuje się do instrukcji bez potrzeby dodatkowego hooka.
+
+**Podejście B: CLAUDE.md + hook Stop**
+
+Dla dodatkowej pewności możesz dodać hook `update-status.sh`, który odpala się po każdej odpowiedzi Claude'a. Jeśli żaden plik statusu nie był modyfikowany >5 minut, hook blokuje wyjście i przypomina o aktualizacji. Patrz sekcja [Instalacja](#krok-2-skonfiguruj-projekt-jako-workera) — hook Stop jest opcjonalny.
+
+### 4. Archiwizacja zadań
+
+Gdy zadanie jest zakończone lub porzucone, użyj `/status-end` aby przenieść je do archiwum. Skill:
+- Aktualizuje status na `completed` lub `abandoned`
+- Dopisuje wpis do motivation.md
+- Przenosi trio plików do `as-claude-manager/<repo>/archive/`
+
+Zarchiwizowane zadania nie pojawiają się na liście przy starcie sesji — hook `session-start.sh` skanuje tylko główny katalog repozytorium.
+
+### 5. Pliki zadań
 
 Każde zadanie składa się z **trzech plików** w `as-claude-manager/<repo>/`:
 
@@ -139,6 +161,28 @@ W katalogu projektu, który ma być workerem:
 
 **a) Dodaj hooki do `.claude/settings.json`:**
 
+Minimalna konfiguracja (tylko SessionStart):
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash E:/Repository/as-claude/worker/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Opcjonalnie — dodaj hook Stop dla przypomnienia o aktualizacji statusu:
+
 ```json
 {
   "hooks": {
@@ -170,13 +214,14 @@ W katalogu projektu, który ma być workerem:
 
 Jeśli plik `.claude/settings.json` już istnieje, dopisz sekcję `hooks` do istniejącej konfiguracji.
 
-**b) Skopiuj skill `/status-update`:**
+**b) Skopiuj skille:**
 
 ```bash
 cp -r E:/Repository/as-claude/worker/skills/status-update <projekt>/.claude/skills/status-update
+cp -r E:/Repository/as-claude/worker/skills/status-end <projekt>/.claude/skills/status-end
 ```
 
-Skill musi znajdować się w `.claude/skills/status-update/SKILL.md` w katalogu projektu.
+Skille muszą znajdować się w `.claude/skills/` w katalogu projektu.
 
 **c) Dodaj instrukcje worker do `CLAUDE.md` projektu:**
 

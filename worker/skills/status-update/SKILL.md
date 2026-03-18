@@ -126,6 +126,7 @@ Jeśli charakter zadania znacząco się zmienił:
 
 ## Zasady
 
+- **Czas UTC**: Zawsze pobieraj aktualny czas komendą `date -u +"%Y-%m-%dT%H:%M:%SZ"`. Nigdy nie zgaduj ani nie zaokrąglaj czasu.
 - Status ma być czytelny w 5 sekund — to snapshot, nie raport.
 - Plan ma być czytelny — czyste checkboxy, bez komentarzy "dlaczego".
 - Motivation jest append-only — nigdy nie usuwaj/edytuj starych wpisów.
