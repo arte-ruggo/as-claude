@@ -1,3 +1,5 @@
 # Lista projektów-workerów (po jednej ścieżce na linię)
 # Uruchom: bash sync.sh
 E:/Repository/nginx-servers
+E:/Repository/AS.Search
+E:/Repository/AS.Integrator

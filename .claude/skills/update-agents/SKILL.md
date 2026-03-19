@@ -27,6 +27,7 @@ Dla każdego workera z `workers.txt`:
 |---|---|
 | `.claude/skills/status-update/SKILL.md` | `worker/skills/status-update/SKILL.md` |
 | `.claude/skills/status-end/SKILL.md` | `worker/skills/status-end/SKILL.md` |
+| `.claude/skills/codex-review2/SKILL.md` | `worker/skills/codex-review2/SKILL.md` |
 | `CLAUDE.md` | `worker/CLAUDE.md` |
 | `.claude/settings.json` (hook SessionStart) | command: `bash E:/Repository/as-claude/worker/hooks/session-start.sh` |
 
@@ -58,10 +59,10 @@ Wyświetl tabelę:
 ```
 ## Workerzy
 
-| Projekt | status-update | status-end | CLAUDE.md | settings.json | Status |
-|---------|--------------|------------|-----------|---------------|--------|
-| E:/Repository/nginx-servers | OK | OK | OUTDATED | OK | wymaga aktualizacji |
-| E:/Repository/my-app | MISSING | MISSING | OK | OK | wymaga aktualizacji |
+| Projekt | status-update | status-end | codex-review2 | CLAUDE.md | settings.json | Status |
+|---------|--------------|------------|---------------|-----------|---------------|--------|
+| E:/Repository/nginx-servers | OK | OK | OK | OUTDATED | OK | wymaga aktualizacji |
+| E:/Repository/my-app | MISSING | MISSING | MISSING | OK | OK | wymaga aktualizacji |
 
 ## Managerzy
 

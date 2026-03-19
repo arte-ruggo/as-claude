@@ -25,12 +25,15 @@ while IFS= read -r PROJECT || [ -n "$PROJECT" ]; do
 
   mkdir -p "$PROJECT/.claude/skills/status-update"
   mkdir -p "$PROJECT/.claude/skills/status-end"
+  mkdir -p "$PROJECT/.claude/skills/codex-review2"
 
   cp "$SCRIPT_DIR/worker/skills/status-update/SKILL.md" "$PROJECT/.claude/skills/status-update/SKILL.md"
   cp "$SCRIPT_DIR/worker/skills/status-end/SKILL.md" "$PROJECT/.claude/skills/status-end/SKILL.md"
+  cp "$SCRIPT_DIR/worker/skills/codex-review2/SKILL.md" "$PROJECT/.claude/skills/codex-review2/SKILL.md"
 
   echo "  -> skills/status-update/SKILL.md"
   echo "  -> skills/status-end/SKILL.md"
+  echo "  -> skills/codex-review2/SKILL.md"
 
   COUNT=$((COUNT + 1))
 done < "$WORKERS_FILE"
