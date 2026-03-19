@@ -5,10 +5,23 @@
 # Output (stdout): JSON z additionalContext (pełna lista zadań ze wszystkich repo)
 # Exit 0 zawsze — nigdy nie blokuje startu.
 
+# Sprawdź zależności
+for cmd in jq sed; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "as-claude: missing dependency: $cmd" >&2
+    exit 0
+  fi
+done
+
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 
 MANAGER_BASE="E:/Repository/as-claude-manager"
+
+if [ ! -d "$MANAGER_BASE" ]; then
+  echo "as-claude: manager directory not found: $MANAGER_BASE" >&2
+  exit 0
+fi
 
 TASK_LIST=""
 TASK_COUNT=0

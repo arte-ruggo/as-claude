@@ -1,0 +1,2 @@
+# Lista zainstalowanych managerów (po jednej ścieżce na linię)
+E:/Repository/as-claude-manager

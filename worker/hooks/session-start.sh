@@ -5,17 +5,17 @@
 # Output (stdout): JSON z additionalContext (session_id + lista zadań)
 # Exit 0 zawsze — nigdy nie blokuje startu.
 
+# Sprawdź zależności
+for cmd in jq git sed; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "as-claude: missing dependency: $cmd" >&2
+    exit 0
+  fi
+done
+
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
-
-# Skip dla managera i tool repo
-if echo "$CWD" | grep -qi "as-claude-manager"; then
-  exit 0
-fi
-if echo "$CWD" | grep -qi "as-claude" && ! echo "$CWD" | grep -qi "as-claude-manager"; then
-  exit 0
-fi
 
 MANAGER_BASE="E:/Repository/as-claude-manager"
 
@@ -24,6 +24,16 @@ REPO_NAME=$(basename "$CWD")
 ORIGIN_URL=$(git -C "$CWD" remote get-url origin 2>/dev/null)
 if [ -n "$ORIGIN_URL" ]; then
   REPO_NAME=$(basename "${ORIGIN_URL%.git}")
+fi
+
+# Skip internal repos
+case "$REPO_NAME" in
+  as-claude|as-claude-manager) exit 0 ;;
+esac
+
+if [ ! -d "$MANAGER_BASE" ]; then
+  echo "as-claude: manager directory not found: $MANAGER_BASE" >&2
+  exit 0
 fi
 
 REPO_DIR="$MANAGER_BASE/$REPO_NAME"
