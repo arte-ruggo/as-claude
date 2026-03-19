@@ -23,6 +23,7 @@ if [ ! -d "$MANAGER_BASE" ]; then
   exit 0
 fi
 
+NL=$'\n'
 TASK_LIST=""
 TASK_COUNT=0
 REPO_COUNT=0
@@ -42,9 +43,8 @@ for REPO_DIR in "$MANAGER_BASE"/*/; do
     STATUS=$(sed -n '/^---$/,/^---$/{ /^status:/{ s/^status: *//; p; q; } }' "$f")
     PROGRESS=$(sed -n '/^---$/,/^---$/{ /^progress:/{ s/^progress: *//; p; q; } }' "$f")
     UPDATED=$(sed -n '/^---$/,/^---$/{ /^updated:/{ s/^updated: *//; p; q; } }' "$f")
-    CWD_TASK=$(sed -n '/^---$/,/^---$/{ /^cwd:/{ s/^cwd: *//; p; q; } }' "$f")
 
-    TASK_LIST="${TASK_LIST}${REPO_NAME} | ${TASK} | ${STATUS} | ${PROGRESS}% | ${UPDATED} | ${FILENAME}\n"
+    TASK_LIST="${TASK_LIST}${REPO_NAME} | ${TASK} | ${STATUS} | ${PROGRESS}% | ${UPDATED} | ${FILENAME}${NL}"
     TASK_COUNT=$((TASK_COUNT + 1))
   done
 done
@@ -68,7 +68,7 @@ for REPO_DIR in "$MANAGER_BASE"/*/; do
     STATUS=$(sed -n '/^---$/,/^---$/{ /^status:/{ s/^status: *//; p; q; } }' "$f")
     UPDATED=$(sed -n '/^---$/,/^---$/{ /^updated:/{ s/^updated: *//; p; q; } }' "$f")
 
-    ARCHIVE_LIST="${ARCHIVE_LIST}${REPO_NAME} | ${TASK} | ${STATUS} | ${UPDATED} | ${FILENAME}\n"
+    ARCHIVE_LIST="${ARCHIVE_LIST}${REPO_NAME} | ${TASK} | ${STATUS} | ${UPDATED} | ${FILENAME}${NL}"
     ARCHIVE_COUNT=$((ARCHIVE_COUNT + 1))
   done
 done
@@ -80,11 +80,11 @@ if [ -z "$ARCHIVE_LIST" ]; then
   ARCHIVE_LIST="(brak)"
 fi
 
-CONTEXT="session_id: ${SESSION_ID}\nrola: manager\n\n"
-CONTEXT="${CONTEXT}Repozytoria: ${REPO_COUNT} | Aktywne zadania: ${TASK_COUNT} | Zarchiwizowane: ${ARCHIVE_COUNT}\n\n"
-CONTEXT="${CONTEXT}## Aktywne zadania\nRepo | Zadanie | Status | Postęp | Ostatnia zmiana | Plik\n"
-CONTEXT="${CONTEXT}${TASK_LIST}\n"
-CONTEXT="${CONTEXT}## Archiwum\nRepo | Zadanie | Status | Ostatnia zmiana | Plik\n"
+CONTEXT="session_id: ${SESSION_ID}${NL}rola: manager${NL}${NL}"
+CONTEXT="${CONTEXT}Repozytoria: ${REPO_COUNT} | Aktywne zadania: ${TASK_COUNT} | Zarchiwizowane: ${ARCHIVE_COUNT}${NL}${NL}"
+CONTEXT="${CONTEXT}## Aktywne zadania${NL}Repo | Zadanie | Status | Postęp | Ostatnia zmiana | Plik${NL}"
+CONTEXT="${CONTEXT}${TASK_LIST}${NL}"
+CONTEXT="${CONTEXT}## Archiwum${NL}Repo | Zadanie | Status | Ostatnia zmiana | Plik${NL}"
 CONTEXT="${CONTEXT}${ARCHIVE_LIST}"
 
 jq -n --arg ctx "$CONTEXT" '{

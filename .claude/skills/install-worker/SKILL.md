@@ -32,21 +32,22 @@ cp "E:/Repository/as-claude/worker/skills/status-update/SKILL.md" "<projekt>/.cl
 cp "E:/Repository/as-claude/worker/skills/status-end/SKILL.md" "<projekt>/.claude/skills/status-end/SKILL.md"
 ```
 
-### Krok 4: Skopiuj CLAUDE.md
+### Krok 4: CLAUDE.md
 
-Jeśli projekt nie ma `CLAUDE.md`:
-```bash
-cp "E:/Repository/as-claude/worker/CLAUDE.md" "<projekt>/CLAUDE.md"
-```
+Przeczytaj źródłowy `E:/Repository/as-claude/worker/CLAUDE.md`.
 
-Jeśli projekt ma `CLAUDE.md` — dopisz zawartość `worker/CLAUDE.md` na początku pliku, oddzielając od reszty linią `---`.
+- **Brak `CLAUDE.md`** — skopiuj `worker/CLAUDE.md` jako nowy plik.
+- **`CLAUDE.md` bez sekcji workera** — dopisz zawartość `worker/CLAUDE.md` na początku pliku, oddzielając od reszty linią `---`.
+- **`CLAUDE.md` z sekcją workera** (aktualizacja) — porównaj sekcję workera (treść przed pierwszym `---` separatorem) z aktualnym źródłem `worker/CLAUDE.md`. Jeśli się różni — zastąp sekcję workera aktualną wersją, zachowując treść projektu po `---`. Jeśli identyczna — pomiń.
 
 ### Krok 5: Skonfiguruj hooki
 
-Zapytaj użytkownika:
-> Chcesz hook Stop (przypomnienie o /status-update po każdej odpowiedzi)? Zalecane: nie — instrukcje w CLAUDE.md wystarczą.
+Przeczytaj `.claude/settings.json` (jeśli istnieje).
 
-**Bez Stop hooka** — dodaj do `.claude/settings.json`:
+**Nowa instalacja** (brak hooków SessionStart):
+
+Dodaj do `.claude/settings.json`:
+
 ```json
 {
   "hooks": {
@@ -65,22 +66,11 @@ Zapytaj użytkownika:
 }
 ```
 
-**Ze Stop hookiem** — dodaj również sekcję `"Stop"`:
-```json
-"Stop": [
-  {
-    "matcher": "",
-    "hooks": [
-      {
-        "type": "command",
-        "command": "bash E:/Repository/as-claude/worker/hooks/update-status.sh"
-      }
-    ]
-  }
-]
-```
+Jeśli plik istnieje z inną konfiguracją — dopisz sekcję `hooks`, nie nadpisuj reszty.
 
-Jeśli `.claude/settings.json` już istnieje z inną konfiguracją — dopisz sekcję `hooks` do istniejącego JSON-a, nie nadpisuj.
+**Aktualizacja** (hook SessionStart już istnieje):
+
+Sprawdź czy command hooka SessionStart wskazuje na `bash E:/Repository/as-claude/worker/hooks/session-start.sh`. Jeśli ścieżka jest inna — zaktualizuj. Nie ruszaj pozostałych hooków ani ustawień.
 
 ### Krok 6: Zarejestruj workera
 
@@ -93,6 +83,6 @@ Wyświetl użytkownikowi podsumowanie:
 Zainstalowano worker w: <ścieżka>
   - skills: status-update, status-end
   - CLAUDE.md: skopiowany/dopisany
-  - hooks: SessionStart [+ Stop]
+  - hooks: SessionStart
   - Zarejestrowany w workers.txt
 ```

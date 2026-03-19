@@ -15,7 +15,7 @@ Gdy pracujesz z wieloma sesjami Claude Code jednocześnie, trudno śledzić co k
 as-claude/                          # ten projekt — narzędzia i konfiguracja
 ├── worker/
 │   ├── CLAUDE.md                   # instrukcje dla workerów (kopiowane do projektów)
-│   ├── config/global-settings.json # template hooków
+│   ├── config/global-settings.json # template referencyjny (hook Stop jest eksperymentalny — nie instalować)
 │   ├── hooks/
 │   │   ├── session-start.sh        # wstrzykuje listę zadań na starcie sesji
 │   │   └── update-status.sh        # (opcjonalny) przypomina o aktualizacji statusu
@@ -24,7 +24,17 @@ as-claude/                          # ten projekt — narzędzia i konfiguracja
 │       │   └── SKILL.md            # skill /status-update
 │       └── status-end/
 │           └── SKILL.md            # skill /status-end (archiwizacja zadań)
-└── manager/                        # (w przygotowaniu)
+├── manager/
+│   ├── CLAUDE.md                   # instrukcje dla managera (kopiowane do projektu)
+│   └── hooks/
+│       └── session-start.sh        # skanuje wszystkie repo i zadania
+├── .claude/skills/                 # skille administracyjne tego repo
+│   ├── install-worker/SKILL.md     # /install-worker
+│   ├── install-manager/SKILL.md    # /install-manager
+│   └── update-agents/SKILL.md      # /update-agents
+├── sync.sh                         # szybka synchronizacja skilli do workerów
+├── workers.txt                     # lista zainstalowanych workerów (ścieżki)
+└── managers.txt                    # lista zainstalowanych managerów (ścieżki)
 
 as-claude-manager/                  # osobne repo — pliki statusów
 ├── nginx-servers/
@@ -65,9 +75,11 @@ Masz dwa podejścia do przypominania Claude'owi o aktualizacji statusu:
 
 Instrukcja w CLAUDE.md mówi Claude'owi żeby regularnie uruchamiał `/status-update` przy istotnych zmianach. To wystarczy w większości przypadków — Claude stosuje się do instrukcji bez potrzeby dodatkowego hooka.
 
-**Podejście B: CLAUDE.md + hook Stop**
+**Podejście B: CLAUDE.md + hook Stop (eksperymentalne — nie używać)**
 
-Dla dodatkowej pewności możesz dodać hook `update-status.sh`, który odpala się po każdej odpowiedzi Claude'a. Jeśli żaden plik statusu nie był modyfikowany >5 minut, hook blokuje wyjście i przypomina o aktualizacji. Patrz sekcja [Instalacja](#krok-2-skonfiguruj-projekt-jako-workera) — hook Stop jest opcjonalny.
+> **Uwaga:** Hook Stop jest w trakcie rozwoju i obecnie nie działa prawidłowo. Może powodować zbędne blokowanie sesji (np. gdy nie ma żadnych zadań). Nie instaluj go w projektach — używaj podejścia A.
+
+Hook `update-status.sh` odpala się po każdej odpowiedzi Claude'a. Jeśli żaden plik statusu nie był modyfikowany >5 minut, hook blokuje wyjście i przypomina o aktualizacji.
 
 ### 4. Archiwizacja zadań
 
@@ -181,38 +193,9 @@ Minimalna konfiguracja (tylko SessionStart):
 }
 ```
 
-Opcjonalnie — dodaj hook Stop dla przypomnienia o aktualizacji statusu:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash E:/Repository/as-claude/worker/hooks/session-start.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash E:/Repository/as-claude/worker/hooks/update-status.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
 Jeśli plik `.claude/settings.json` już istnieje, dopisz sekcję `hooks` do istniejącej konfiguracji.
+
+> **Uwaga:** Hook Stop (`update-status.sh`) jest eksperymentalny i obecnie nie działa prawidłowo — nie instaluj go.
 
 **b) Skopiuj skille:**
 

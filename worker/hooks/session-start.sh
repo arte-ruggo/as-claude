@@ -39,6 +39,7 @@ fi
 REPO_DIR="$MANAGER_BASE/$REPO_NAME"
 
 # Skanuj istniejące zadania
+NL=$'\n'
 TASK_LIST=""
 if [ -d "$REPO_DIR" ]; then
   for f in "$REPO_DIR"/*.md; do
@@ -49,7 +50,7 @@ if [ -d "$REPO_DIR" ]; then
     TASK=$(sed -n '/^---$/,/^---$/{ /^task:/{ s/^task: *//; p; q; } }' "$f")
     STATUS=$(sed -n '/^---$/,/^---$/{ /^status:/{ s/^status: *//; p; q; } }' "$f")
     PROGRESS=$(sed -n '/^---$/,/^---$/{ /^progress:/{ s/^progress: *//; p; q; } }' "$f")
-    TASK_LIST="${TASK_LIST}- [${STATUS}] ${TASK} (${PROGRESS}%) — plik: ${FILENAME}\n"
+    TASK_LIST="${TASK_LIST}- [${STATUS}] ${TASK} (${PROGRESS}%) — plik: ${FILENAME}${NL}"
   done
 fi
 
@@ -58,7 +59,7 @@ if [ -z "$TASK_LIST" ]; then
 fi
 
 # Buduj kontekst
-CONTEXT="session_id: ${SESSION_ID}\nrepo: ${REPO_NAME}\n\nIstniejące zadania dla ${REPO_NAME}:\n${TASK_LIST}"
+CONTEXT="session_id: ${SESSION_ID}${NL}repo: ${REPO_NAME}${NL}${NL}Istniejące zadania dla ${REPO_NAME}:${NL}${TASK_LIST}"
 
 # Output JSON z additionalContext
 jq -n --arg ctx "$CONTEXT" '{

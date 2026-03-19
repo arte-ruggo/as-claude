@@ -22,15 +22,20 @@ Sprawdź czy projekt ma już:
 
 Poinformuj użytkownika o stanie projektu i zapytaj czy kontynuować.
 
-### Krok 3: Skopiuj CLAUDE.md
+### Krok 3: CLAUDE.md
 
-```bash
-cp "E:/Repository/as-claude/manager/CLAUDE.md" "<projekt>/CLAUDE.md"
-```
+Przeczytaj źródłowy `E:/Repository/as-claude/manager/CLAUDE.md`.
+
+- **Brak `CLAUDE.md`** — skopiuj `manager/CLAUDE.md` jako nowy plik.
+- **`CLAUDE.md` istnieje** — porównaj z aktualnym `manager/CLAUDE.md`. Jeśli się różni — zapytaj użytkownika czy nadpisać. Jeśli identyczny — pomiń.
 
 ### Krok 4: Skonfiguruj hooki i uprawnienia
 
-Utwórz/zaktualizuj `.claude/settings.json`:
+Przeczytaj `.claude/settings.json` (jeśli istnieje).
+
+**Nowa instalacja** (brak hooków i uprawnień):
+
+Utwórz `.claude/settings.json`:
 
 ```json
 {
@@ -55,7 +60,15 @@ Utwórz/zaktualizuj `.claude/settings.json`:
 }
 ```
 
-Jeśli `.claude/settings.json` już istnieje — dopisz sekcje `permissions` i `hooks`, nie nadpisuj.
+Jeśli plik istnieje z inną konfiguracją — dopisz sekcje `permissions` i `hooks`, nie nadpisuj reszty.
+
+**Aktualizacja** (hook/permissions już istnieją):
+
+Sprawdź czy:
+- Hook SessionStart wskazuje na `bash E:/Repository/as-claude/manager/hooks/session-start.sh`
+- `permissions.allow` zawiera `Read(<projekt>/**)`
+
+Zaktualizuj co trzeba, nie ruszaj pozostałych ustawień.
 
 ### Krok 5: Zarejestruj managera
 

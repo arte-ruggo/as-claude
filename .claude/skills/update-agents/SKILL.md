@@ -23,15 +23,18 @@ Dla każdego workera z `workers.txt`:
 1. Sprawdź czy katalog istnieje. Jeśli nie — oznacz jako `MISSING`.
 2. Porównaj pliki ze źródłem:
 
-| Plik w projekcie | Źródło |
+| Plik w projekcie | Źródło / oczekiwana wartość |
 |---|---|
 | `.claude/skills/status-update/SKILL.md` | `worker/skills/status-update/SKILL.md` |
 | `.claude/skills/status-end/SKILL.md` | `worker/skills/status-end/SKILL.md` |
 | `CLAUDE.md` | `worker/CLAUDE.md` |
+| `.claude/settings.json` (hook SessionStart) | command: `bash E:/Repository/as-claude/worker/hooks/session-start.sh` |
 
-Dla każdego pliku uruchom `diff -q` aby sprawdzić czy są różnice. Jeśli plik w projekcie nie istnieje — oznacz jako `MISSING`.
+Dla skilli i CLAUDE.md: uruchom `diff -q` aby sprawdzić różnice. Jeśli plik nie istnieje — oznacz jako `MISSING`.
 
 **Uwaga o CLAUDE.md:** Projekt może mieć własne treści w CLAUDE.md dopisane po sekcji workera. Porównuj tylko zawartość do pierwszego `---` separatora (lub do końca jeśli brak separatora). Użyj `diff` na pierwszych N liniach odpowiadających długości źródłowego worker/CLAUDE.md.
+
+**Uwaga o settings.json:** Nie porównuj całego pliku — sprawdź tylko czy hook SessionStart wskazuje na prawidłową ścieżkę. Inne hooki i ustawienia projektu mogą się różnić i to jest OK.
 
 ### Krok 3: Sprawdź managerów
 
@@ -40,9 +43,13 @@ Dla każdego managera z `managers.txt`:
 1. Sprawdź czy katalog istnieje. Jeśli nie — oznacz jako `MISSING`.
 2. Porównaj:
 
-| Plik w projekcie | Źródło |
+| Plik w projekcie | Źródło / oczekiwana wartość |
 |---|---|
 | `CLAUDE.md` | `manager/CLAUDE.md` |
+| `.claude/settings.json` (hook SessionStart) | command: `bash E:/Repository/as-claude/manager/hooks/session-start.sh` |
+| `.claude/settings.json` (permissions) | `Read(<projekt>/**)` w `permissions.allow` |
+
+**Uwaga o settings.json:** Sprawdź tylko hook SessionStart i permissions — nie porównuj reszty pliku.
 
 ### Krok 4: Raport
 
@@ -51,16 +58,16 @@ Wyświetl tabelę:
 ```
 ## Workerzy
 
-| Projekt | status-update | status-end | CLAUDE.md | Status |
-|---------|--------------|------------|-----------|--------|
-| E:/Repository/nginx-servers | OK | OK | OUTDATED | wymaga aktualizacji |
-| E:/Repository/my-app | MISSING | MISSING | OK | wymaga aktualizacji |
+| Projekt | status-update | status-end | CLAUDE.md | settings.json | Status |
+|---------|--------------|------------|-----------|---------------|--------|
+| E:/Repository/nginx-servers | OK | OK | OUTDATED | OK | wymaga aktualizacji |
+| E:/Repository/my-app | MISSING | MISSING | OK | OK | wymaga aktualizacji |
 
 ## Managerzy
 
-| Projekt | CLAUDE.md | Status |
-|---------|-----------|--------|
-| E:/Repository/as-claude-manager | OK | aktualny |
+| Projekt | CLAUDE.md | settings.json | Status |
+|---------|-----------|---------------|--------|
+| E:/Repository/as-claude-manager | OK | OK | aktualny |
 ```
 
 Statusy plików: `OK` (identyczny), `OUTDATED` (różni się), `MISSING` (brak pliku).
@@ -70,11 +77,15 @@ Statusy plików: `OK` (identyczny), `OUTDATED` (różni się), `MISSING` (brak p
 Jeśli są przestarzałe instalacje, zapytaj użytkownika:
 > Zaktualizować wszystkie przestarzałe pliki? (tak/nie/wybierz)
 
-- **tak** — zaktualizuj wszystkie `OUTDATED` i `MISSING` pliki kopiując ze źródeł
+- **tak** — zaktualizuj wszystkie `OUTDATED` i `MISSING` pliki
 - **nie** — zakończ bez zmian
 - **wybierz** — pozwól użytkownikowi wskazać które projekty zaktualizować
 
-Przy aktualizacji `CLAUDE.md` workera: jeśli projekt ma dodatkowe treści poniżej sekcji workera (po `---`), zachowaj je — nadpisz tylko sekcję workera na początku.
+Zasady aktualizacji:
+- **Skille** — kopiuj ze źródeł (nadpisz).
+- **CLAUDE.md workera** — jeśli projekt ma dodatkowe treści po `---`, zachowaj je — nadpisz tylko sekcję workera na początku.
+- **CLAUDE.md managera** — nadpisz całość (manager nie ma treści projektu).
+- **settings.json** — zaktualizuj tylko ścieżkę hooka SessionStart (i permissions dla managera). Nie ruszaj pozostałych ustawień projektu.
 
 ### Krok 6: Potwierdzenie
 

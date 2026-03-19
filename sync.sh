@@ -1,5 +1,6 @@
 #!/bin/bash
-# Synchronizuje skille i CLAUDE.md do wszystkich projektów-workerów z workers.txt
+# Synchronizuje skille do wszystkich projektów-workerów z workers.txt
+# CLAUDE.md i settings.json nie są synchronizowane — te pliki modyfikuje Claude podczas instalacji (/install-worker)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKERS_FILE="$SCRIPT_DIR/workers.txt"
@@ -27,11 +28,9 @@ while IFS= read -r PROJECT || [ -n "$PROJECT" ]; do
 
   cp "$SCRIPT_DIR/worker/skills/status-update/SKILL.md" "$PROJECT/.claude/skills/status-update/SKILL.md"
   cp "$SCRIPT_DIR/worker/skills/status-end/SKILL.md" "$PROJECT/.claude/skills/status-end/SKILL.md"
-  cp "$SCRIPT_DIR/worker/CLAUDE.md" "$PROJECT/CLAUDE.md"
 
   echo "  -> skills/status-update/SKILL.md"
   echo "  -> skills/status-end/SKILL.md"
-  echo "  -> CLAUDE.md"
 
   COUNT=$((COUNT + 1))
 done < "$WORKERS_FILE"

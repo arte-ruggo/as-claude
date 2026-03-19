@@ -30,4 +30,3 @@ Regularnie aktualizuj pliki zadania używając `/status-update` — za każdym r
 
 Gdy zmieniasz plan (dodajesz/usuwasz/modyfikujesz kroki) — ZAWSZE dopisz powód do motivation.md.
 
-Jeśli projekt ma skonfigurowany hook Stop — będzie Ci przypominał o aktualizacji po każdej odpowiedzi. Zignoruj przypomnienie jeśli jeszcze nie wybrałeś zadania lub nic istotnego się nie zmieniło.
