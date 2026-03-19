@@ -38,4 +38,35 @@ while IFS= read -r PROJECT || [ -n "$PROJECT" ]; do
   COUNT=$((COUNT + 1))
 done < "$WORKERS_FILE"
 
-echo "Done: $COUNT project(s) synced."
+echo "Done: $COUNT worker(s) synced."
+
+# --- Synchronizacja skilli managerów ---
+
+MANAGERS_FILE="$SCRIPT_DIR/managers.txt"
+
+if [ -f "$MANAGERS_FILE" ]; then
+  MCOUNT=0
+
+  while IFS= read -r PROJECT || [ -n "$PROJECT" ]; do
+    [[ -z "$PROJECT" || "$PROJECT" =~ ^# ]] && continue
+
+    if [ ! -d "$PROJECT" ]; then
+      echo "SKIP: $PROJECT (directory not found)"
+      continue
+    fi
+
+    echo "SYNC MANAGER: $PROJECT"
+
+    for SKILL_DIR in "$SCRIPT_DIR/manager/skills"/*/; do
+      [ -d "$SKILL_DIR" ] || continue
+      SKILL_NAME=$(basename "$SKILL_DIR")
+      mkdir -p "$PROJECT/.claude/skills/$SKILL_NAME"
+      cp "$SKILL_DIR/SKILL.md" "$PROJECT/.claude/skills/$SKILL_NAME/SKILL.md"
+      echo "  -> skills/$SKILL_NAME/SKILL.md"
+    done
+
+    MCOUNT=$((MCOUNT + 1))
+  done < "$MANAGERS_FILE"
+
+  echo "Done: $MCOUNT manager(s) synced."
+fi

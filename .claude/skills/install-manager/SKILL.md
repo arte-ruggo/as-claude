@@ -70,16 +70,28 @@ Sprawdź czy:
 
 Zaktualizuj co trzeba, nie ruszaj pozostałych ustawień.
 
-### Krok 5: Zarejestruj managera
+### Krok 5: Zainstaluj skille managera
+
+Skopiuj skille z `E:/Repository/as-claude/manager/skills/` do projektu:
+
+```bash
+mkdir -p "<projekt>/.claude/skills/workers-status"
+cp "E:/Repository/as-claude/manager/skills/workers-status/SKILL.md" "<projekt>/.claude/skills/workers-status/SKILL.md"
+```
+
+Jeśli skill już istnieje i jest identyczny — pomiń. Jeśli się różni — nadpisz.
+
+### Krok 6: Zarejestruj managera
 
 Dodaj ścieżkę projektu do `E:/Repository/as-claude/managers.txt` (jedna ścieżka na linię). Nie dodawaj duplikatów. Utwórz plik jeśli nie istnieje.
 
-### Krok 6: Potwierdzenie
+### Krok 7: Potwierdzenie
 
 Wyświetl użytkownikowi podsumowanie:
 ```
 Zainstalowano manager w: <ścieżka>
   - CLAUDE.md: skopiowany
+  - skills: workers-status
   - hooks: SessionStart
   - permissions: Read(<projekt>/**)
   - Zarejestrowany w managers.txt

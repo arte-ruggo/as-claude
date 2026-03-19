@@ -25,6 +25,7 @@ Odpowiadaj na pytania użytkownika o zadania. Przykłady:
 - **"Pokaż archiwum"** — wyświetl tabelę zarchiwizowanych zadań.
 - **"Szczegóły zadania X"** — przeczytaj `<nazwa>.md` i `<nazwa>.plan.md`, pokaż pełny status + plan + dziennik pracy.
 - **"Co robiono w ostatnim tygodniu?"** — przeanalizuj daty w `updated` i `session_history`.
+- **"/workers-status"** — uruchom skill /workers-status aby wyświetlić świeże dane z dysku (pomija dane z hooka SessionStart).
 
 ## Lokalizacja plików
 

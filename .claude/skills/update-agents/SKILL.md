@@ -47,6 +47,7 @@ Dla każdego managera z `managers.txt`:
 | Plik w projekcie | Źródło / oczekiwana wartość |
 |---|---|
 | `CLAUDE.md` | `manager/CLAUDE.md` |
+| `.claude/skills/workers-status/SKILL.md` | `manager/skills/workers-status/SKILL.md` |
 | `.claude/settings.json` (hook SessionStart) | command: `bash E:/Repository/as-claude/manager/hooks/session-start.sh` |
 | `.claude/settings.json` (permissions) | `Read(<projekt>/**)` w `permissions.allow` |
 
@@ -66,9 +67,9 @@ Wyświetl tabelę:
 
 ## Managerzy
 
-| Projekt | CLAUDE.md | settings.json | Status |
-|---------|-----------|---------------|--------|
-| E:/Repository/as-claude-manager | OK | OK | aktualny |
+| Projekt | workers-status | CLAUDE.md | settings.json | Status |
+|---------|----------------|-----------|---------------|--------|
+| E:/Repository/as-claude-manager | OK | OK | OK | aktualny |
 ```
 
 Statusy plików: `OK` (identyczny), `OUTDATED` (różni się), `MISSING` (brak pliku).
@@ -83,7 +84,8 @@ Jeśli są przestarzałe instalacje, zapytaj użytkownika:
 - **wybierz** — pozwól użytkownikowi wskazać które projekty zaktualizować
 
 Zasady aktualizacji:
-- **Skille** — kopiuj ze źródeł (nadpisz).
+- **Skille workerów** — kopiuj ze źródeł (nadpisz).
+- **Skille managerów** — kopiuj ze źródeł (nadpisz).
 - **CLAUDE.md workera** — jeśli projekt ma dodatkowe treści po `---`, zachowaj je — nadpisz tylko sekcję workera na początku.
 - **CLAUDE.md managera** — nadpisz całość (manager nie ma treści projektu).
 - **settings.json** — zaktualizuj tylko ścieżkę hooka SessionStart (i permissions dla managera). Nie ruszaj pozostałych ustawień projektu.
