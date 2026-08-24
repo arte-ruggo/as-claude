@@ -1,159 +1,66 @@
 # as-claude
 
-System do zarządzania wieloma instancjami Claude Code pracującymi równolegle nad różnymi zadaniami.
+Repozytorium narzędziowe do zarządzania wieloma instancjami Claude Code — dystrybuuje współdzielone skille i hooki do projektów (workerów) oraz utrzymuje dashboard managera.
 
 ## Idea
 
-Gdy pracujesz z wieloma sesjami Claude Code jednocześnie, trudno śledzić co która sesja robi, gdzie skończyła i co zostało do zrobienia. **as-claude** rozwiązuje ten problem dzieląc instancje na **workerów** i **managera**:
+Instancje Claude Code dzielą się na dwie role:
 
-- **Worker** — każda sesja Claude Code otwarta w projekcie (np. `nginx-servers`, `my-app`). Worker pracuje nad zadaniami i regularnie zapisuje swój status do pliku markdown.
-- **Manager** — centralne repozytorium (`as-claude-manager/`) przechowujące pliki statusów wszystkich workerów. Pozwala szybko zobaczyć stan każdego zadania.
+- **Worker** — sesja Claude Code otwarta w projekcie (np. `nginx-servers`, `my-app`). Dostaje z tego repo współdzielone skille (obecnie `codex-review2`) oraz hook SessionStart, który wstrzykuje do kontekstu `session_id` i nazwę repozytorium.
+- **Manager** — sesja Claude Code w osobnym repozytorium `as-claude-manager/`, działająca jako read-only dashboard zadań: hook SessionStart skanuje pliki zadań ze wszystkich repozytoriów, a skill `/workers-status` wyświetla świeży stan z dysku.
+
+> **Uwaga:** dawny system statusów po stronie workerów (skille `status-update` / `status-end` / `status-list`, hook Stop, automatyczne prowadzenie plików statusów przez workerów) został wycofany. Strona managera pozostała bez zmian i nadal czyta pliki zadań znajdujące się w `as-claude-manager/`.
 
 ## Struktura
 
 ```
 as-claude/                          # ten projekt — narzędzia i konfiguracja
 ├── worker/
-│   ├── CLAUDE.md                   # instrukcje dla workerów (kopiowane do projektów)
-│   ├── config/global-settings.json # template referencyjny (hook Stop jest eksperymentalny — nie instalować)
+│   ├── config/global-settings.json # template referencyjny hooków workera
 │   ├── hooks/
-│   │   ├── session-start.sh        # wstrzykuje listę zadań na starcie sesji
-│   │   └── update-status.sh        # (opcjonalny) przypomina o aktualizacji statusu
+│   │   └── session-start.sh        # wstrzykuje session_id i nazwę repo
 │   └── skills/
-│       ├── status-update/
-│       │   └── SKILL.md            # skill /status-update
-│       └── status-end/
-│           └── SKILL.md            # skill /status-end (archiwizacja zadań)
+│       └── codex-review2/
+│           └── SKILL.md            # skill /codex-review2
 ├── manager/
 │   ├── CLAUDE.md                   # instrukcje dla managera (kopiowane do projektu)
-│   └── hooks/
-│       └── session-start.sh        # skanuje wszystkie repo i zadania
+│   ├── hooks/
+│   │   └── session-start.sh        # skanuje wszystkie repo i zadania
+│   └── skills/
+│       └── workers-status/
+│           └── SKILL.md            # skill /workers-status
 ├── .claude/skills/                 # skille administracyjne tego repo
 │   ├── install-worker/SKILL.md     # /install-worker
 │   ├── install-manager/SKILL.md    # /install-manager
 │   └── update-agents/SKILL.md      # /update-agents
-├── sync.sh                         # szybka synchronizacja skilli do workerów
+├── sync.sh                         # szybka synchronizacja skilli do workerów i managerów
 ├── workers.txt                     # lista zainstalowanych workerów (ścieżki)
 └── managers.txt                    # lista zainstalowanych managerów (ścieżki)
 
-as-claude-manager/                  # osobne repo — pliki statusów
-├── nginx-servers/
-│   ├── audyt-konfiguracji-bugi.md              # status
-│   ├── audyt-konfiguracji-bugi.plan.md         # plan + dziennik
-│   ├── audyt-konfiguracji-bugi.motivation.md   # log decyzji
-│   └── archive/                                # zarchiwizowane zadania
-│       ├── fix-login-flow.md
-│       ├── fix-login-flow.plan.md
-│       └── fix-login-flow.motivation.md
-├── my-app/
-│   └── ...
+as-claude-manager/                  # osobne repo — pliki zadań czytane przez managera
+├── <repo-name>/
+│   ├── <zadanie>.md                # status (frontmatter: task, status, progress, updated)
+│   ├── <zadanie>.plan.md           # plan + dziennik pracy
+│   ├── <zadanie>.motivation.md     # log decyzji
+│   └── archive/                    # zakończone/porzucone zadania
 └── ...
 ```
 
 ## Jak to działa
 
-### 1. Start sesji
+### Worker
 
-Gdy otwierasz Claude Code w projekcie-workerze, hook `session-start.sh` automatycznie:
+Gdy otwierasz Claude Code w projekcie-workerze, hook `session-start.sh`:
 - Ustala nazwę repozytorium (z `git remote` lub nazwy katalogu)
-- Skanuje istniejące pliki statusów w `as-claude-manager/<repo>/`
-- Wstrzykuje listę zadań i `session_id` do kontekstu Claude'a
+- Wstrzykuje `session_id` i nazwę repo do kontekstu Claude'a
 
-Claude przedstawia Ci listę zadań i pyta:
-- **Kontynuować istniejące?** — czyta status + plan, pokazuje gdzie przerwaliśmy
-- **Nowe zadanie?** — podajesz nazwę, Claude tworzy 3 pliki zadania
+Poza tym worker to zwykła sesja — pracujesz normalnie, korzystając ze współdzielonych skilli (np. `/codex-review2`).
 
-### 2. Praca
+### Manager
 
-Pracujesz normalnie. Claude regularnie aktualizuje plik statusu za pomocą skilla `/status-update` — za każdym razem gdy zachodzą istotne zmiany. Status ma być żywym snapshotem, nie raportem końcowym.
+Sesja w `as-claude-manager/` dostaje na starcie pełną listę zadań ze wszystkich repozytoriów (hook `manager/hooks/session-start.sh`) i działa jako read-only dashboard. Skill `/workers-status` skanuje pliki z dysku i pokazuje świeży stan (statusy, postęp, blokery, archiwum).
 
-### 3. Przypomnienia (opcjonalnie)
-
-Masz dwa podejścia do przypominania Claude'owi o aktualizacji statusu:
-
-**Podejście A: Tylko instrukcje w CLAUDE.md (zalecane)**
-
-Instrukcja w CLAUDE.md mówi Claude'owi żeby regularnie uruchamiał `/status-update` przy istotnych zmianach. To wystarczy w większości przypadków — Claude stosuje się do instrukcji bez potrzeby dodatkowego hooka.
-
-**Podejście B: CLAUDE.md + hook Stop (eksperymentalne — nie używać)**
-
-> **Uwaga:** Hook Stop jest w trakcie rozwoju i obecnie nie działa prawidłowo. Może powodować zbędne blokowanie sesji (np. gdy nie ma żadnych zadań). Nie instaluj go w projektach — używaj podejścia A.
-
-Hook `update-status.sh` odpala się po każdej odpowiedzi Claude'a. Jeśli żaden plik statusu nie był modyfikowany >5 minut, hook blokuje wyjście i przypomina o aktualizacji.
-
-### 4. Archiwizacja zadań
-
-Gdy zadanie jest zakończone lub porzucone, użyj `/status-end` aby przenieść je do archiwum. Skill:
-- Aktualizuje status na `completed` lub `abandoned`
-- Dopisuje wpis do motivation.md
-- Przenosi trio plików do `as-claude-manager/<repo>/archive/`
-
-Zarchiwizowane zadania nie pojawiają się na liście przy starcie sesji — hook `session-start.sh` skanuje tylko główny katalog repozytorium.
-
-### 5. Pliki zadań
-
-Każde zadanie składa się z **trzech plików** w `as-claude-manager/<repo>/`:
-
-#### Status (`<nazwa>.md`) — lekki snapshot
-
-```markdown
----
-task: Audyt konfiguracji nginx
-repo: nginx-servers
-status: in_progress
-progress: 40
-current_session: abc-123
-updated: 2026-03-18T00:05:00Z
----
-
-## Current task
-Audyt konfiguracji nginx — poszukiwanie błędów
-
-## Done
-- Przegląd struktury repozytorium
-
-## Next
-- Naprawa krytycznych problemów SSL
-
-## Problems
-brak
-```
-
-#### Plan (`<nazwa>.plan.md`) — plan realizacji + dziennik pracy
-
-```markdown
-# Audyt konfiguracji nginx
-
-## Cel
-Przegląd konfiguracji nginx pod kątem błędów, luk bezpieczeństwa i best practices.
-
-## Plan
-1. [x] Przegląd struktury repozytorium
-2. [x] Audyt plików .conf
-3. [ ] Naprawa krytycznych problemów SSL
-4. [ ] Security headers
-
-## Dziennik pracy
-
-### 2026-03-17 — sesja abc-123
-- Zrobione: przegląd 61 plików .conf, raport z 23 problemami
-- Problemy: brak dostępu do serwera produkcyjnego
-- Wnioski: sd-proxy ma istotne luki SSL
-
-## Ślepe uliczki
-(brak)
-```
-
-#### Motivation (`<nazwa>.motivation.md`) — append-only log decyzji
-
-```markdown
-# Decyzje: Audyt konfiguracji nginx
-
-- [2026-03-17T22:00Z] Utworzono plan z 4 krokami
-- [2026-03-18T01:00Z] Punkt "migracja sd-proxy na brotli" odłożony — wymaga przebudowy obrazu Docker
-```
-
-## Instalacja
+## Instalacja i aktualizacja
 
 ### Wymagania
 
@@ -161,19 +68,17 @@ Przegląd konfiguracji nginx pod kątem błędów, luk bezpieczeństwa i best pr
 - `jq` (do parsowania JSON w hookach)
 - Git Bash na Windows (hooki napisane w bashu)
 
-### Krok 1: Przygotuj katalog managera
+### Skille administracyjne (zalecane)
 
-```bash
-mkdir -p E:/Repository/as-claude-manager
-```
+Otwórz Claude Code w tym repo i użyj:
 
-### Krok 2: Skonfiguruj projekt jako workera
+- `/install-worker` — instaluje workera w podanym projekcie (skille + hook SessionStart + rejestracja w `workers.txt`)
+- `/install-manager` — instaluje dashboard managera
+- `/update-agents` — porównuje wszystkie instalacje ze źródłami i aktualizuje przestarzałe
 
-W katalogu projektu, który ma być workerem:
+### Ręcznie
 
-**a) Dodaj hooki do `.claude/settings.json`:**
-
-Minimalna konfiguracja (tylko SessionStart):
+**a) Hook SessionStart w `.claude/settings.json` projektu:**
 
 ```json
 {
@@ -195,21 +100,18 @@ Minimalna konfiguracja (tylko SessionStart):
 
 Jeśli plik `.claude/settings.json` już istnieje, dopisz sekcję `hooks` do istniejącej konfiguracji.
 
-> **Uwaga:** Hook Stop (`update-status.sh`) jest eksperymentalny i obecnie nie działa prawidłowo — nie instaluj go.
-
 **b) Skopiuj skille:**
 
 ```bash
-cp -r E:/Repository/as-claude/worker/skills/status-update <projekt>/.claude/skills/status-update
-cp -r E:/Repository/as-claude/worker/skills/status-end <projekt>/.claude/skills/status-end
+cp -r E:/Repository/as-claude/worker/skills/codex-review2 <projekt>/.claude/skills/codex-review2
 ```
 
-Skille muszą znajdować się w `.claude/skills/` w katalogu projektu.
+**c) Zarejestruj projekt** — dodaj ścieżkę do `workers.txt` (jedna na linię).
 
-**c) Dodaj instrukcje worker do `CLAUDE.md` projektu:**
+### Szybka synchronizacja skilli
 
-Skopiuj zawartość `as-claude/worker/CLAUDE.md` na początek pliku `CLAUDE.md` w projekcie, oddzielając od reszty linią `---`.
+```bash
+bash E:/Repository/as-claude/sync.sh
+```
 
-### Krok 3: Gotowe
-
-Otwórz Claude Code w skonfigurowanym projekcie. Claude powinien przywitać Cię listą istniejących zadań.
+Kopiuje aktualne skille do wszystkich workerów z `workers.txt` i managerów z `managers.txt` (nie rusza `settings.json`).

@@ -10,17 +10,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash E:/Repository/as-claude/worker/hooks/update-status.sh"
-          }
-        ]
-      }
     ]
   }
 }
