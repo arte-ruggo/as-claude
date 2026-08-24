@@ -1,12 +1,12 @@
 #!/bin/bash
-# Hook: SessionStart — skanuje istniejące zadania i wstrzykuje kontekst do workera.
+# Hook: SessionStart — wstrzykuje session_id i nazwę repo.
 #
 # Input (stdin): JSON z session_id, cwd, source, etc.
-# Output (stdout): JSON z additionalContext (session_id + lista zadań)
+# Output (stdout): JSON z additionalContext
 # Exit 0 zawsze — nigdy nie blokuje startu.
 
 # Sprawdź zależności
-for cmd in jq git sed; do
+for cmd in jq git; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "as-claude: missing dependency: $cmd" >&2
     exit 0
@@ -16,8 +16,6 @@ done
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
-
-MANAGER_BASE="E:/Repository/as-claude-manager"
 
 # Derive repo name
 REPO_NAME=$(basename "$CWD")
@@ -31,35 +29,9 @@ case "$REPO_NAME" in
   as-claude|as-claude-manager) exit 0 ;;
 esac
 
-if [ ! -d "$MANAGER_BASE" ]; then
-  echo "as-claude: manager directory not found: $MANAGER_BASE" >&2
-  exit 0
-fi
-
-REPO_DIR="$MANAGER_BASE/$REPO_NAME"
-
-# Skanuj istniejące zadania
-NL=$'\n'
-TASK_LIST=""
-if [ -d "$REPO_DIR" ]; then
-  for f in "$REPO_DIR"/*.md; do
-    [ -f "$f" ] || continue
-    FILENAME=$(basename "$f")
-    # Pomijaj pliki plan i motivation — czytamy tylko statusy
-    case "$FILENAME" in *.plan.md|*.motivation.md) continue ;; esac
-    TASK=$(sed -n '/^---$/,/^---$/{ /^task:/{ s/^task: *//; p; q; } }' "$f")
-    STATUS=$(sed -n '/^---$/,/^---$/{ /^status:/{ s/^status: *//; p; q; } }' "$f")
-    PROGRESS=$(sed -n '/^---$/,/^---$/{ /^progress:/{ s/^progress: *//; p; q; } }' "$f")
-    TASK_LIST="${TASK_LIST}- [${STATUS}] ${TASK} (${PROGRESS}%) — plik: ${FILENAME}${NL}"
-  done
-fi
-
-if [ -z "$TASK_LIST" ]; then
-  TASK_LIST="(brak istniejących zadań)"
-fi
-
 # Buduj kontekst
-CONTEXT="session_id: ${SESSION_ID}${NL}repo: ${REPO_NAME}${NL}${NL}Istniejące zadania dla ${REPO_NAME}:${NL}${TASK_LIST}"
+NL=$'\n'
+CONTEXT="session_id: ${SESSION_ID}${NL}repo: ${REPO_NAME}"
 
 # Output JSON z additionalContext
 jq -n --arg ctx "$CONTEXT" '{

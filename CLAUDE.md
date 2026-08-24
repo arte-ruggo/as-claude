@@ -1,6 +1,10 @@
 To jest repozytorium narzędziowe systemu **as-claude** — systemu zarządzania zadaniami dla wielu instancji Claude Code.
 
-Nie pracujesz tu nad kodem projektu. Twoja rola to administracja systemu:
+**Przeczytaj `README.md`** jeśli potrzebujesz pełnego kontekstu (architektura, flow pracy, format plików zadań, instrukcja instalacji).
+
+## Skrót
+
+System dzieli instancje Claude Code na **workerów** (sesje w projektach, korzystają ze współdzielonych skilli i hooka SessionStart wstrzykującego session_id i nazwę repo) i **managera** (read-only dashboard zadań w `as-claude-manager/`). To repo zawiera źródła obu ról — hooki i skille — oraz narzędzia do instalacji i synchronizacji. Nie pracujesz tu nad kodem projektu. Twoja rola to administracja systemu:
 
 ## Dostępne skille
 
@@ -10,8 +14,8 @@ Nie pracujesz tu nad kodem projektu. Twoja rola to administracja systemu:
 
 ## Struktura repo
 
-- `worker/` — pliki źródłowe dla workerów (hooks, skills, CLAUDE.md)
-- `manager/` — pliki źródłowe dla managera (hooks, CLAUDE.md)
+- `worker/` — pliki źródłowe dla workerów (hooks, skills)
+- `manager/` — pliki źródłowe dla managera (hooks, skills, CLAUDE.md)
 - `workers.txt` — lista zainstalowanych workerów (ścieżki projektów)
 - `managers.txt` — lista zainstalowanych managerów
-- `sync.sh` — szybka synchronizacja skilli do workerów (alternatywa dla `/update-agents`)
+- `sync.sh` — szybka synchronizacja skilli do workerów i managerów (alternatywa dla `/update-agents`)

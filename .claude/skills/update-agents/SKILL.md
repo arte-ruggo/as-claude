@@ -25,15 +25,10 @@ Dla każdego workera z `workers.txt`:
 
 | Plik w projekcie | Źródło / oczekiwana wartość |
 |---|---|
-| `.claude/skills/status-update/SKILL.md` | `worker/skills/status-update/SKILL.md` |
-| `.claude/skills/status-end/SKILL.md` | `worker/skills/status-end/SKILL.md` |
 | `.claude/skills/codex-review2/SKILL.md` | `worker/skills/codex-review2/SKILL.md` |
-| `CLAUDE.md` | `worker/CLAUDE.md` |
 | `.claude/settings.json` (hook SessionStart) | command: `bash E:/Repository/as-claude/worker/hooks/session-start.sh` |
 
-Dla skilli i CLAUDE.md: uruchom `diff -q` aby sprawdzić różnice. Jeśli plik nie istnieje — oznacz jako `MISSING`.
-
-**Uwaga o CLAUDE.md:** Projekt może mieć własne treści w CLAUDE.md dopisane po sekcji workera. Porównuj tylko zawartość do pierwszego `---` separatora (lub do końca jeśli brak separatora). Użyj `diff` na pierwszych N liniach odpowiadających długości źródłowego worker/CLAUDE.md.
+Dla skilli: uruchom `diff -q` aby sprawdzić różnice. Jeśli plik nie istnieje — oznacz jako `MISSING`.
 
 **Uwaga o settings.json:** Nie porównuj całego pliku — sprawdź tylko czy hook SessionStart wskazuje na prawidłową ścieżkę. Inne hooki i ustawienia projektu mogą się różnić i to jest OK.
 
@@ -60,10 +55,10 @@ Wyświetl tabelę:
 ```
 ## Workerzy
 
-| Projekt | status-update | status-end | codex-review2 | CLAUDE.md | settings.json | Status |
-|---------|--------------|------------|---------------|-----------|---------------|--------|
-| E:/Repository/nginx-servers | OK | OK | OK | OUTDATED | OK | wymaga aktualizacji |
-| E:/Repository/my-app | MISSING | MISSING | MISSING | OK | OK | wymaga aktualizacji |
+| Projekt | codex-review2 | settings.json | Status |
+|---------|---------------|---------------|--------|
+| E:/Repository/nginx-servers | OUTDATED | OK | wymaga aktualizacji |
+| E:/Repository/my-app | MISSING | OK | wymaga aktualizacji |
 
 ## Managerzy
 
@@ -86,7 +81,6 @@ Jeśli są przestarzałe instalacje, zapytaj użytkownika:
 Zasady aktualizacji:
 - **Skille workerów** — kopiuj ze źródeł (nadpisz).
 - **Skille managerów** — kopiuj ze źródeł (nadpisz).
-- **CLAUDE.md workera** — jeśli projekt ma dodatkowe treści po `---`, zachowaj je — nadpisz tylko sekcję workera na początku.
 - **CLAUDE.md managera** — nadpisz całość (manager nie ma treści projektu).
 - **settings.json** — zaktualizuj tylko ścieżkę hooka SessionStart (i permissions dla managera). Nie ruszaj pozostałych ustawień projektu.
 
