@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "install-manager@skills-dir": true,
+    "install-worker@skills-dir": true,
+    "update-agents@skills-dir": true
+  }
+}
