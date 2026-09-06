@@ -1,5 +1,5 @@
 # Lista projektów-workerów (po jednej ścieżce na linię)
-# Uruchom: bash sync.sh
+# Wlaczenie skilla w projekcie = wpis "codex-review2@skills-dir": true w jego .claude/settings.json (README.md); kopii skilli nie ma
 E:/Repository/nginx-servers
 E:/Repository/as-search
 E:/Repository/as-integrator
