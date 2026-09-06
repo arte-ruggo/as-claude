@@ -4,7 +4,7 @@ To jest repozytorium narzędziowe systemu **as-claude** — systemu zarządzania
 
 ## Skrót
 
-System dzieli instancje Claude Code na **workerów** (sesje w projektach, korzystają ze współdzielonych skilli i hooka SessionStart wstrzykującego session_id i nazwę repo) i **managera** (read-only dashboard zadań w `as-claude-manager/`). To repo zawiera źródła obu ról — hooki i skille — oraz narzędzia do instalacji i synchronizacji. Nie pracujesz tu nad kodem projektu. Twoja rola to administracja systemu:
+System dzieli instancje Claude Code na **workerów** (sesje w projektach, korzystają z hooka SessionStart wstrzykującego session_id i nazwę repo oraz ze skilli włączonych w repo) i **managera** (read-only dashboard zadań w `as-claude-manager/`). To repo zawiera hooki obu ról i rejestr instalacji. **Skille nie żyją tutaj** — każdy skill (także `install-worker`, `install-manager`, `update-agents`, `codex-review2`, `workers-status`) istnieje wyłącznie w `ar-skills` i jest włączany wpisem `"<skill>@skills-dir": true` w `.claude/settings.json` projektu. Nigdy nie kopiuj skilla do `.claude/skills/` żadnego repo. Nie pracujesz tu nad kodem projektu. Twoja rola to administracja systemu:
 
 ## Dostępne skille
 
@@ -14,8 +14,8 @@ System dzieli instancje Claude Code na **workerów** (sesje w projektach, korzys
 
 ## Struktura repo
 
-- `worker/` — pliki źródłowe dla workerów (hooks, skills)
-- `manager/` — pliki źródłowe dla managera (hooks, skills, CLAUDE.md)
+- `worker/` — hooki workerów (`hooks/session-start.sh`, template `config/global-settings.json`)
+- `manager/` — hooki managera i `CLAUDE.md` kopiowany do projektu managera
 - `workers.txt` — lista zainstalowanych workerów (ścieżki projektów)
 - `managers.txt` — lista zainstalowanych managerów
-- `sync.sh` — szybka synchronizacja skilli do workerów i managerów (alternatywa dla `/update-agents`)
+- `.claude/settings.json` — włączenia skilli administracyjnych tego repo
